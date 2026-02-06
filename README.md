@@ -14,7 +14,9 @@ A weak SOC-assistant, the strategy for breaking it, and a stronger and more dura
 3. LLM prompt that outputs a structured incident report
    * give LLM what happened, define a strucutre for what to return, parse
 5. Figure out how to break LLM
-6. Figure out how to make LLM stronger
+   * probably some type of prompt injection
+7. Figure out how to make LLM stronger
+   * probably more prep/awareness or architecture changes
 
 ## Concepts to Know
 * IP/Subnet Basics (internal vs external IPs)
@@ -29,12 +31,12 @@ A weak SOC-assistant, the strategy for breaking it, and a stronger and more dura
    * Many failed logins from the same IP
    * LLM: “possible credential stuffing/brute force, investigate account and source IP”
 2. Port Scan
-  * One src IP hits many ports or many hosts quickly
-  * LLM: "recon activity, check if its internal vulnerability scanner or attacker"
+   * One src IP hits many ports or many hosts quickly
+   * LLM: "recon activity, check if its internal vulnerability scanner or attacker"
 3. Suspicious DNS + beaconing
-  * Repeated DNS queries to random-looking domains
-  * Regular outbound connections every X minutes
-  * LLM: "possible C2 beaconing, identify processs/host, block domain, isolate host"
+   * Repeated DNS queries to random-looking domains
+   * Regular outbound connections every X minutes
+   * LLM: "possible C2 beaconing, identify processs/host, block domain, isolate host"
 
 ## Possible Product Flow
 * 00:00 - 23:59
