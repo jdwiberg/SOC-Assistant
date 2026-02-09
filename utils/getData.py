@@ -2,6 +2,13 @@ from datasets import load_dataset
 from pandas import DataFrame
 from typing import Tuple
 
+"""
+Use like this:
+
+from getData import get_data
+X, Y = get_data(test_split=True, validation_split=True, small_subset=True)
+"""
+
 def get_data(test_split=False, validation_split=False, small_subset=False) -> Tuple[DataFrame, DataFrame]:
     """
     Function gets network traffic data from the CICIDS-2017 dataset, 
@@ -37,3 +44,4 @@ if __name__ == "__main__":
     X, Y = get_data(test_split=True, validation_split=True, small_subset=True)
     print(X["train"].head()) # Contains the features of the training set
     print(Y["train"].head()) # Contains the labels of the training set
+
