@@ -1,6 +1,9 @@
 # SOC-Assistant
 A weak SOC-assistant, the strategy for breaking it, and a stronger and more durable update.
 
+### Dataset
+https://huggingface.co/datasets/bvk/CICIDS-2017/
+
 ## Steps:
 1. Create/obtain small 'log dataset'
    * between 50 and 200 JSON log lines (auth logs, DNS logs, firewall logs)
