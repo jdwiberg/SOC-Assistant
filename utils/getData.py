@@ -35,7 +35,7 @@ def get_data(test_split=False, validation_split=False, small_subset=False) -> Tu
     for split_name, split_ds in ds.items():
         pdf = split_ds.to_pandas()
         X[split_name] = pdf.drop(columns=["Label", "Attempted Category"], errors="ignore")
-        Y[split_name] = pdf["Label"]
+        Y[split_name] = pdf.filter(["Label", "Timestamp"])
 
     return X, Y
 
