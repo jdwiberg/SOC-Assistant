@@ -11,12 +11,14 @@ import config
 OPENAI_API_KEY = config.OpenAI_API_KEY
 def main():
     print("Hello from soc-assistant!")
+    total_tally = 0
+    total_counter = 0
     while True:
         print("Security Test Starting: \n")
         X, Y = getData.get_data(test_split=True, validation_split=True, small_subset=True)
         network_logs = X["train"].iloc[1].to_dict() #First line as a test for now
         #Dataframe for training model to identify Vulnerability scans and DNS Beaconing
-        VulnScanANDdnsBeacon = X["train"].filter(items=["Src IP dec", "Dst Port", "Protocol", "Timestamp", "Flow Duration"])
+        VulnScanANDdnsBeacon = X["train"].filter(items=["Src IP dec", "Src Port", "Dst IP dec", "Dst Port", "Protocol", "Timestamp", "Flow Duration", "Total Fwd Packet", "Total Bwd packets"])
         checker = Y["train"]
         tally = 0
         counter = 0
@@ -26,15 +28,20 @@ def main():
         for timestamp, items in check.items():
             yLabel = checker.loc[checker["Timestamp"] ==  timestamp, "Label"].iloc[0]
             xBlacklist = items.blacklist
+            if(yLabel == "Portscan" or yLabel == "Infiltration - Portscan" or yLabel == "Botnet"):
+                print("-------------------VULNERABILITY SCAN/DNS BEACON-------------------")
             if((yLabel == "BENIGN" and xBlacklist == True) or (yLabel == "Portscan" and xBlacklist == False) or (yLabel == "Infiltration - Portscan" and xBlacklist == False) or (yLabel == "Botnet" and xBlacklist == False)):
                 counter = counter + 1
             else:
                 tally = tally + 1
                 counter = counter + 1
-            print("It was " + yLabel + ". Model quantified it's blacklist as: " + str(xBlacklist) + "\n")
+            print("It was " + yLabel + ". Model quantified it's blacklist as: " + str(xBlacklist))
             print(f"{timestamp} -> {items} \n")
         
-        print("Total Correct: " + str(tally) + "/" + str(counter)) 
+        print("Total Correct: " + str(tally) + "/" + str(counter))
+        total_tally = total_tally + tally
+        total_counter = total_counter + counter
+        print("\nAll Time Correct: " + str(total_tally) + "/" + str(total_counter)) 
         print("Security Test Stopped: \n")
         time.sleep(10)
 
