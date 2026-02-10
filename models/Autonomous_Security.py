@@ -4,13 +4,13 @@ from typing import List, Dict, Literal
 
 class RiskItem(BaseModel): #Creates a new Pydantic model to structure risk assessment data
     ip_src: str
-    port_src: str
-    ip_dst: str
+    # port_src: str
+    # ip_dst: str
     port_dest: str
-    protocol: int
-    flow_duration: int
-    tot_fwd_packet: int
-    tot_bwd_packet: int
+    # protocol: int
+    # flow_duration: int
+    # tot_fwd_packet: int
+    # tot_bwd_packet: int
     risk: Literal["Low", "Medium", "High"] # Risk level
     blacklist: bool # Whether network action was blocked by AI
     rationale: str # Rationale for the risk assessment
@@ -22,16 +22,18 @@ class RiskReport(BaseModel): #Creates a new Pydantic model to structure the over
     timestamp: str # Timestamp of the report, "as of" format
     items: List[RIwithoutTimeStamp]  # List of risk items
 
-def openai_risk_filter(openai_client: OpenAI, newtork_logs) -> Dict[str, RiskItem]:
+def openai_risk_filter(openai_client: OpenAI, newtork_logs, promptIn, promptOut) -> Dict[str, RiskItem]:
     
     system = (
-        "Look for possible slow vulnerability scanning from a combination of at 1 or multiple IP addresses."
+        f"{promptIn}"
+       # "Look for a possible DDoS Attacks in the given network logs"
     )
 
     #Misidentifies a lot of Benign calls as DNS Beaconing
 
     user = ( #User prompt for OpenAI
-        "For each item, output risk (Low/Medium/High), blacklist(true/false), and a 1-sentence rationale. \n\n"
+        #For each item, output risk (Low/Medium/High), blacklist(true/false), and a 1-sentence rationale.
+        f"{promptOut}\n\n"
         f"Data:\n{newtork_logs}" 
     )
     #^ Constructs the user prompt with the payload data formatted as JSON

@@ -8,6 +8,12 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import config
+
+ppIn = Path(__file__).resolve().parent / "prompts" / "prompt1In.txt"
+ppOut = Path(__file__).resolve().parent / "prompts" / "prompt1Out.txt"
+promptIn = ppIn.read_text(encoding="utf-8")
+promptOut = ppOut.read_text(encoding="utf-8")
+
 OPENAI_API_KEY = config.OpenAI_API_KEY
 def main():
     print("Hello from soc-assistant!")
@@ -18,19 +24,21 @@ def main():
         X, Y = getData.get_data(test_split=True, validation_split=True, small_subset=True)
         network_logs = X["train"].iloc[1].to_dict() #First line as a test for now
         #Dataframe for training model to identify Vulnerability scans and DNS Beaconing
-        VulnScanANDdnsBeacon = X["train"].filter(items=["Src IP dec", "Src Port", "Dst IP dec", "Dst Port", "Protocol", "Timestamp", "Flow Duration", "Total Fwd Packet", "Total Bwd packets"])
+        VulnScanANDdnsBeacon = X["train"]
+        # .filter(items=["Src IP dec", "Src Port", "Dst IP dec", "Dst Port", "Protocol", "Timestamp", "Flow Duration", "Total Fwd Packet", "Total Bwd packets"])
         checker = Y["train"]
         tally = 0
         counter = 0
         openai_client = OpenAI(api_key=OPENAI_API_KEY)
-        check = Autonomous_Security.openai_risk_filter(openai_client, VulnScanANDdnsBeacon)
+        check = Autonomous_Security.openai_risk_filter(openai_client, VulnScanANDdnsBeacon, promptIn, promptOut)
         print("\n")
         for timestamp, items in check.items():
-            yLabel = checker.loc[checker["Timestamp"] ==  timestamp, "Label"].iloc[0]
+            try:
+                yLabel = checker.loc[checker["Timestamp"] ==  timestamp, "Label"].iloc[0]
+            except:
+                yLabel = "Unknown"
             xBlacklist = items.blacklist
-            if(yLabel == "Portscan" or yLabel == "Infiltration - Portscan" or yLabel == "Botnet"):
-                print("-------------------VULNERABILITY SCAN/DNS BEACON-------------------")
-            if((yLabel == "BENIGN" and xBlacklist == True) or (yLabel == "Portscan" and xBlacklist == False) or (yLabel == "Infiltration - Portscan" and xBlacklist == False) or (yLabel == "Botnet" and xBlacklist == False)):
+            if((yLabel == "BENIGN" and xBlacklist == True) or (yLabel == "DDoS" and xBlacklist == False) or (yLabel == "Portscan" and xBlacklist == False) or (yLabel == "Infiltration - Portscan" and xBlacklist == False) or (yLabel == "Botnet" and xBlacklist == False)):
                 counter = counter + 1
             else:
                 tally = tally + 1

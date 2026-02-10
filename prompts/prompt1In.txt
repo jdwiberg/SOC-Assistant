@@ -45,11 +45,3 @@ Allowed labels (pick exactly one):
 - Web Attack - XSS
 - Web Attack - XSS - Attempted
 
-Output requirements:
-- Return ONLY a valid JSON object (no markdown, no extra text).
-- The JSON must match exactly this schema:
-{
-  "label": "<one allowed label>",
-  "action": "<one concise next action>"
-}
-- Ensure the JSON is properly quoted and parseable.
