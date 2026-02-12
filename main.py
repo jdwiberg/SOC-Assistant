@@ -9,7 +9,15 @@ import config
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-OPENAI_API_KEY = config.OpenAI_API_KEY
+
+try:
+    OPENAI_API_KEY = config.OpenAI_API_KEY
+except:
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    
 
 # Setting up basic logging outputs
 logging.basicConfig(
