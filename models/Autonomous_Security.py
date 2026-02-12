@@ -1,6 +1,6 @@
 from openai import OpenAI
 from pydantic import BaseModel
-from typing import List, Dict, Literal
+from typing import List, Literal
 
 class RiskItem(BaseModel): #Creates a new Pydantic model to structure risk assessment data
     ip_src: str
@@ -22,23 +22,23 @@ class RiskReport(BaseModel): #Creates a new Pydantic model to structure the over
     timestamp: str # Timestamp of the report, "as of" format
     items: List[RIwithoutTimeStamp]  # List of risk items
 
-def openai_risk_filter(openai_client: OpenAI, newtork_logs, promptIn, promptOut) -> Dict[str, RiskItem]:
+def openai_risk_filter(openai_client: OpenAI, network_logs, promptIn, promptOut) -> list[tuple[str, RiskItem]]:
     
     system = (
-        f"{promptIn}"
+        "Given a list of network logs, determine whether each log indicates a network attack and, if so, flag it to be blocked, using attack labels like the following:" 
+        f"{promptIn}" 
        # "Look for a possible DDoS Attacks in the given network logs"
     )
 
     #Misidentifies a lot of Benign calls as DNS Beaconing
-
+    #For each item, output risk (Low/Medium/High), blacklist(true/false), and a 1-sentence rationale.
     user = ( #User prompt for OpenAI
-        #For each item, output risk (Low/Medium/High), blacklist(true/false), and a 1-sentence rationale.
-        f"{promptOut}\n\n"
-        f"Data:\n{newtork_logs}" 
+        f"{promptOut}\n"
+        f"Data:\n{network_logs}" 
     )
     #^ Constructs the user prompt with the payload data formatted as JSON
     resp = openai_client.responses.parse(
-         model="gpt-4.1-mini", 
+         model="gpt-5-nano", 
             input=[
                 {"role": "system", "content": system}, #Sets the rules/behavior that I want to models data collection/response to abide by
                 {"role": "user", "content": user}, #Gives the model the actual request and data you want it to act on
@@ -49,6 +49,8 @@ def openai_risk_filter(openai_client: OpenAI, newtork_logs, promptIn, promptOut)
 
     report: RiskReport = resp.output_parsed #Pulls the already parsed, validated results out of the OpenAI Response and stores it in report as a RiskReport Object
     #'report.items' is a list of 'RiskItem' objects
-    return {item.timestamp: RiskItem(**item.model_dump(exclude="timestamp"))
-             for item in report.items}  #Builds and returns a dictionary that maps each timestamp to its 'RiskItem' object
 
+    return[
+        (item.timestamp, RiskItem(**item.model_dump(exclude={"timestamp"})))
+        for item in report.items  #Builds and returns a dictionary that maps each timestamp to its 'RiskItem' object
+    ]

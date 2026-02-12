@@ -1,6 +1,7 @@
 from datasets import load_dataset
 from pandas import DataFrame
 from typing import Tuple
+import random
 
 """
 Use like this:
@@ -19,13 +20,14 @@ def get_data(test_split=False, validation_split=False, small_subset=False) -> Tu
         raise ValueError("Validation split cannot be created without a test split.")
 
     ds = load_dataset("bvk/CICIDS-2017", split="train")
+    seed = random.randint(1, 255)
 
     if small_subset:
-        ds = ds.shuffle(seed=42).select(range(1000))
+        ds = ds.shuffle(seed=seed).select(range(1000))
     if test_split:
-        ds = ds.train_test_split(test_size=0.2, seed=42)
+        ds = ds.train_test_split(test_size=0.2, seed=seed)
         if validation_split:
-            ds["train"], ds["validation"] = ds["train"].train_test_split(test_size=0.25, seed=42).values()
+            ds["train"], ds["validation"] = ds["train"].train_test_split(test_size=0.25, seed=seed).values()
 
     # Normalize to a dict of splits so downstream code is consistent
     if not isinstance(ds, dict):
@@ -35,7 +37,7 @@ def get_data(test_split=False, validation_split=False, small_subset=False) -> Tu
     for split_name, split_ds in ds.items():
         pdf = split_ds.to_pandas()
         X[split_name] = pdf.drop(columns=["Label", "Attempted Category"], errors="ignore")
-        Y[split_name] = pdf.filter(["Label", "Timestamp"])
+        Y[split_name] = pdf.filter(["Label", "Timestamp", "Attempted Category"])
 
     return X, Y
 

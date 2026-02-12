@@ -1,1 +1,1 @@
-For each item, output risk (Low/Medium/High), blacklist(true/false), and a 1-sentence rationale.
+For each item, timestamp, IP source, Port Destination, output risk (Low/Medium/High), blacklist(true/false), and a 1-sentence rationale.
