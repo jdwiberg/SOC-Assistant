@@ -1,0 +1,7 @@
+def timeframe(start, end) -> the portion of the dataset corresponding to this timeframe
+
+def ground_truth(timeframe_with_labels) -> low or high risk
+
+def model(timeframe_without_labels) -> RISK_REPORT
+
+def display(RISK_REPORT) -> display
