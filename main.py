@@ -1,6 +1,6 @@
 from openai import OpenAI
 from models import Autonomous_Security
-from utils import getData
+from utils import utils
 from pathlib import Path
 import sys
 import time
@@ -45,7 +45,7 @@ def main():
     while True:
         logger.info("Security Test Starting")
 
-        X, Y = getData.get_data(
+        X, Y = utils.get_data(
             test_split=True, 
             validation_split=True, 
             small_subset=True
