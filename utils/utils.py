@@ -4,7 +4,12 @@ from pandas import DataFrame
 from typing import Tuple
 import random
 
-def get_data(test_split=False, validation_split=False, small_subset=False) -> Tuple[DataFrame, DataFrame]:
+def get_data(
+    test_split=False,
+    validation_split=False,
+    small_subset=False,
+    allowed_labels: list[str] | None = None,
+) -> Tuple[DataFrame, DataFrame]:
     """
     Function gets network traffic data from the CICIDS-2017 dataset, 
     with options for test and validation splits, 
@@ -33,9 +38,14 @@ def get_data(test_split=False, validation_split=False, small_subset=False) -> Tu
         ds = {"train": ds}
 
     X, Y = {}, {}
+    if allowed_labels is None:
+        allowed_labels = ["BENIGN", "DoS", "PortScan", "BruteForce"]
+    allowed_set = set(allowed_labels)
     running_id = 0
     for split_name, split_ds in ds.items():
         pdf = split_ds.to_pandas().reset_index(drop=True)
+        if "Label" in pdf.columns:
+            pdf = pdf[pdf["Label"].isin(allowed_set)].reset_index(drop=True)
         pdf["id"] = range(running_id, running_id + len(pdf))
         running_id += len(pdf)
         X[split_name] = pdf.drop(columns=["Label", "Attempted Category"], errors="ignore")
