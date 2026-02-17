@@ -6,7 +6,7 @@ import re
 
 @dataclass
 class RiskReport: #Creates a new Pydantic model to structure risk assessment data
-    attack_type: Literal["BENIGN", "DoS", "PortScan", "BruteForce"]
+    attack_type: Literal["BENIGN", "DoS", "Portscan", "BruteForce"]
     risk: Literal["Low", "Medium", "High"] # Risk level
     blacklist: bool # Whether network action was blocked by AI
     rationale: str # Rationale for the risk assessment

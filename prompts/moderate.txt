@@ -6,7 +6,7 @@ Your task is to classify the flow as exactly ONE of:
 
 - BENIGN
 - DoS
-- PortScan
+- Portscan
 - BruteForce
 
 You must also:
@@ -87,7 +87,7 @@ Blacklist:
 - false if risk is Medium
 
 
-PortScan:
+Portscan:
 
 Strong indicators:
 - Very short duration AND very low packet or byte counts
@@ -124,7 +124,7 @@ TIE-BREAKING RULES
 If the flow is:
 
 - Extremely high rate or volume → DoS
-- Very short with very low packets and incomplete → PortScan
+- Very short with very low packets and incomplete → Portscan
 - Short with repeated small exchanges → BruteForce
 
 If suspicious but not definitive, classify as attack with risk = Medium instead of BENIGN.
@@ -133,7 +133,7 @@ OUTPUT FORMAT (REQUIRED)
 --------------------------------
 Return valid JSON in exactly this format:
 {
-  "attack_type": "BENIGN | DoS | PortScan | BruteForce",
+  "attack_type": "BENIGN | DoS | Portscan | BruteForce",
   "risk": "Low | Medium | High",
   "blacklist": true | false,
   "rationale": "One sentence explanation referencing specific traffic characteristics"
@@ -142,7 +142,7 @@ Return valid JSON in exactly this format:
 EXAMPLE OUTPUT
 --------------------------------
 {
-  "attack_type": "PortScan",
+  "attack_type": "Portscan",
   "risk": "Medium",
   "blacklist": false,
   "rationale": "This flow has very short duration, low packet count, and minimal response consistent with probing behavior."

@@ -6,7 +6,7 @@ Your task is to classify the flow as ONE of the following:
 
 - BENIGN
 - DoS
-- PortScan
+- Portscan
 - BruteForce
 
 You must also assign a risk level, decide whether the source IP should be blacklisted, and provide a brief rationale.
@@ -40,7 +40,7 @@ Risk: High
 Blacklist: true
 
 
-PortScan:
+Portscan:
 Attempt to discover open ports on a target system.
 
 Indicators:
@@ -95,7 +95,7 @@ OUTPUT FORMAT (REQUIRED)
 Return your answer as valid JSON in exactly this format:
 
 {
-  "attack_type": "BENIGN | DoS | PortScan | BruteForce",
+  "attack_type": "BENIGN | DoS | Portscan | BruteForce",
   "risk": "Low | Medium | High",
   "blacklist": true | false,
   "rationale": "One sentence explanation referencing specific traffic characteristics"

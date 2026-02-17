@@ -19,14 +19,19 @@ except Exception:
 
 
 def main(n: int, prompt_file_name: str):
-    pIN = Path(__file__).resolve().parent / "prompts" / prompt_file_name
+    pIN = Path(__file__).resolve().parent / "prompts" / (prompt_file_name + '.txt')
+    pHIST = Path(__file__).resolve().parent / "prompts" / (prompt_file_name + '_hist.txt')
+    if not pHIST.exists():
+        pHIST = pIN
     promptIn = pIN.read_text(encoding="utf-8")
 
     openai_client = OpenAI(api_key=OPENAI_API_KEY)
     print("Hello from soc-assistant!")
 
     X, Y = utils.get_balanced_subset(
-        allowed_labels=["BENIGN", "DDoS", "PortScan", "BruteForce"]
+        allowed_labels=["BENIGN", "DDoS", "Portscan", "BruteForce"]
+        # allowed_labels=["BENIGN", "Portscan"]
+        # allowed_labels=["BENIGN", "DDoS", "BruteForce"]
     )
     #Dataframe for training model to identify Vulnerability scans and DNS Beaconing
     flow_rows = X.head(n).filter(items=[
@@ -43,8 +48,11 @@ def main(n: int, prompt_file_name: str):
     correct = 0
     true_pos, true_neg, false_pos, false_neg = 0, 0, 0, 0
 
-
     for i, (_, row) in enumerate(flow_rows.iterrows()):
+        row = utils.get_history(flow_rows, row, 600)
+        if row.get("no_history") == None:
+            promptIn = pHIST.read_text(encoding="utf-8")
+        print(row, "\n")
         check = soc_assistant.openai_risk_filter(
             openai_client,
             row.to_dict(),
@@ -73,4 +81,4 @@ def main(n: int, prompt_file_name: str):
         
 
 if __name__ == "__main__":
-    main(10, "aggressive.txt")
+    main(10, "aggressive")
