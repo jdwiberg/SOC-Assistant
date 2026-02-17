@@ -28,11 +28,13 @@ def main(n: int, prompt_file_name: str):
     openai_client = OpenAI(api_key=OPENAI_API_KEY)
     print("Hello from soc-assistant!")
 
+    allowed_labels = ["BENIGN", "DDoS", "Portscan", "BruteForce"] # Portscan WAY over-representative
+    allowed_labels_no_port =[ "BENIGN", "DDoS", "BruteForce"]
+
     X, Y = utils.get_balanced_subset(
-        allowed_labels=["BENIGN", "DDoS", "Portscan", "BruteForce"]
-        # allowed_labels=["BENIGN", "Portscan"]
-        # allowed_labels=["BENIGN", "DDoS", "BruteForce"]
+        allowed_labels=allowed_labels
     )
+    
     #Dataframe for training model to identify Vulnerability scans and DNS Beaconing
     flow_rows = X.head(n).filter(items=[
         "Src IP dec", "Src Port", "Dst IP dec", "Dst Port", 
