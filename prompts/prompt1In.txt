@@ -1,16 +1,5 @@
-
-- Botnet
-- DDoS
-- DoS GoldenEye
-- DoS Hulk
-- DoS Slowhttptest
-- DoS Slowloris
-- FTP-Patator
-- Infiltration
-- Infiltration - Portscan
-- Portscan
-- SSH-Patator
-- Web Attack - Brute Force
-- Web Attack - SQL Injection
-- Web Attack - XSS
-
+Firewall Rules:
+- No incoming telnet service (request) should be processed
+- Outgoing telnet requests are OK
+- Computer 132.28.6.4 can not do Telnet
+- UDP packets are not allowed

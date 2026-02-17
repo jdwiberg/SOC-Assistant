@@ -19,7 +19,9 @@ def get_data(test_split=False, validation_split=False, small_subset=False) -> Tu
         raise ValueError("Validation split cannot be created without a test split.")
 
     ds = load_dataset("bvk/CICIDS-2017", split="train")
+    #232
     seed = random.randint(1, 255)
+    print("\nSeed: "+ str(seed) + "\n")
 
     if small_subset:
         ds = ds.shuffle(seed=seed).select(range(1000))
@@ -38,7 +40,7 @@ def get_data(test_split=False, validation_split=False, small_subset=False) -> Tu
         pdf = split_ds.to_pandas().reset_index(drop=True)
         pdf["id"] = range(running_id, running_id + len(pdf))
         running_id += len(pdf)
-        X[split_name] = pdf.drop(columns=["Label", "Attempted Category"], errors="ignore")
+        X[split_name] = pdf.drop(columns=["Attempted Category"], errors="ignore")
         Y[split_name] = pdf.filter(["id", "Label", "Timestamp", "Attempted Category"])
 
     return X, Y
