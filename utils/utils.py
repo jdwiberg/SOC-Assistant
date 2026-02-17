@@ -56,7 +56,7 @@ def get_data(
         "Portscan": "PortScan",
     }
 
-    ds = ds.shuffle(seed=seed)
+    ds = ds.shuffle(seed=seed).select(range(40000))
     if small_subset:
         ds = ds.select(range(1000))
     if test_split:
@@ -81,7 +81,6 @@ def get_data(
         running_id += len(pdf)
         X[split_name] = pdf.drop(columns=["Label", "Attempted Category"], errors="ignore")
         Y[split_name] = pdf.filter(["id", "Label", "Timestamp", "Attempted Category"])
-
     return X, Y
 
 
@@ -151,8 +150,6 @@ def get_balanced_subset(
 
     benign = Y_train[Y_train["Label"] == "BENIGN"]
     non_benign = Y_train[Y_train["Label"] != "BENIGN"]
-
-    print(len(non_benign))
 
     n_half = min(len(benign), len(non_benign))
     if n_half == 0:
