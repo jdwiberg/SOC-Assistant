@@ -5,6 +5,7 @@ from models import firewall_AI
 import sys
 from pathlib import Path
 from openai import OpenAI
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -18,6 +19,8 @@ from pathlib import Path
 SOC_ASSISTANT_ROOT = Path(__file__).resolve().parents[1]  # folder containing test_firewall_rules.py
 
 promptIn = (SOC_ASSISTANT_ROOT  / "SOC-Assistant" / "prompts" / "prompt1In.txt").read_text(encoding="utf-8")
+firewall_table_path = SOC_ASSISTANT_ROOT / "SOC-Assistant" / "prompts" / "firewall_rules.csv"
+firewall_table_df = pd.read_csv(firewall_table_path)
 
 
 def firewall_test():
@@ -39,7 +42,7 @@ def firewall_test():
              "Src IP dec", "Src Port", "Dst IP dec", "Dst Port", 
              "Protocol","ACK Flag Count", "Label"])
         
-        result = firewall_rules(df, internal, flagged_IP, flagged_port, flagged_protocol)
+        result = firewall_rules(df, internal, firewall_table_df)
         print(result)
 
         check = firewall_AI.openai_risk_filter(

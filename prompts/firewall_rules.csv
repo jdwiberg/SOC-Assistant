@@ -1,0 +1,8 @@
+Firewall Rule,Direction,Source Address,Destination Address,Protocol,Source Port,Destination Port,ACK Flag
+A,Incoming,external,internal,TCP,-1,23,0
+B,Outgoing,132.28.6.4,external,TCP,-1,23,-1
+C,Incoming,external,132.28.6.4,TCP,23,-1,-1
+D,Outgoing,internal,external,TCP,-1,23,-1
+E,Incoming,external,internal,TCP,23,-1,-1
+F,Incoming,external,internal,UDP,-1,-1,-1
+,,,,,,,
