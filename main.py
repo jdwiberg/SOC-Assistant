@@ -30,10 +30,11 @@ logger = logging.getLogger(__name__)
 # Main prompts
 ppIn = Path(__file__).resolve().parent / "prompts" / "prompt1In.txt"
 ppOut = Path(__file__).resolve().parent / "prompts" / "prompt1Out.txt"
+p2IN = Path(__file__).resolve().parent / "prompts" / "ICL.txt"
 
 promptIn = ppIn.read_text(encoding="utf-8")
 promptOut = ppOut.read_text(encoding="utf-8")
-
+prompt2In = p2IN.read_text(encoding="utf-8")
 
 def main():
     openai_client = OpenAI(api_key=OPENAI_API_KEY)
@@ -74,7 +75,7 @@ def main():
             check = Autonomous_Security.openai_risk_filter(
                 openai_client,
                 VulnScanANDdnsBeacon,
-                promptIn,
+                prompt2In,
                 promptOut
             )
         except Exception:
