@@ -49,11 +49,11 @@ def get_data(
 
         "Heartbleed": "Botnet",
 
-        "Infiltration": "PortScan",
-        "Infiltration - Attempted": "PortScan",
-        "Infiltration - Portscan": "PortScan",
+        "Infiltration": "Portscan",
+        "Infiltration - Attempted": "Portscan",
+        "Infiltration - Portscan": "Portscan",
 
-        "Portscan": "PortScan",
+        "Portscan": "Portscan",
     }
 
     ds = ds.shuffle(seed=seed).select(range(40000))
@@ -70,13 +70,18 @@ def get_data(
 
     X, Y = {}, {}
     if allowed_labels is None:
-        allowed_labels = ["BENIGN", "DoS", "PortScan", "BruteForce"]
+        allowed_labels = ["BENIGN", "DoS", "Portscan", "BruteForce"]
     allowed_set = set(allowed_labels)
+    
     running_id = 0
     for split_name, split_ds in ds.items():
         pdf = split_ds.to_pandas().reset_index(drop=True)
+
         pdf["Label"] = pdf["Label"].replace(label_map)
         pdf = pdf[pdf["Label"].isin(allowed_set)].reset_index(drop=True)
+
+        pdf["Timestamp"] = pdf["Timestamp"].apply(to_seconds)
+
         pdf["id"] = range(running_id, running_id + len(pdf))
         running_id += len(pdf)
         X[split_name] = pdf.drop(columns=["Label", "Attempted Category"], errors="ignore")
@@ -125,6 +130,88 @@ def count_attacks(start: str, end: str, *, Y_timeframe: DataFrame | None = None)
 
     return len(Y_timeframe[(Y_timeframe["Label"] != "BENIGN")])
 
+def ip_hist(df: pd.DataFrame, start: float, window: float, src_ip: str, dst_ip):
+    # Get all rows from the df where "Src IP dec" = src_ip
+    # and (start - window) < "Timestamp" < start
+
+    null = pd.Series(
+        {
+            "no_history": 1
+        }
+    )
+
+    start_window = start - window
+    src_mask = (
+        (df["Src IP dec"] == src_ip)
+        & (df["Timestamp"] >= start_window)
+        & (df["Timestamp"] < start)
+    )
+    dst_mask = (
+        (df["Dst IP dec"] == dst_ip)
+        & (df["Timestamp"] >= start_window)
+        & (df["Timestamp"] < start)
+    )
+
+    rows = df.loc[src_mask].copy()
+    rows_dst = df.loc[dst_mask].copy()
+    
+    if len(rows) == 0:
+        return null
+
+    src_flow_count_w = len(rows)
+    src_unique_dst_count_w = rows["Dst IP dec"].nunique()
+    src_unique_dst_port_count_w = rows["Dst Port"].nunique()
+    src_syn_count_w = rows["SYN Flag Count"].sum()
+    src_bytes_fwd_sum_w = rows["Total Length of Fwd Packet"].sum()
+    src_bytes_bwd_sum_w = rows["Total Length of Bwd Packet"].sum()
+
+    total_bwd_packets = rows["Total Bwd packets"]
+    ack = rows["ACK Flag Count"]
+    syn = rows["SYN Flag Count"]
+    rst = rows["RST Flag Count"]
+    low_bwd_bytes = rows["Total Length of Bwd Packet"]
+
+    failedish_mask = (
+        (total_bwd_packets == 0)
+        | ((ack == 0) & (syn > 0))
+        | ((rst > 0) & (low_bwd_bytes == 0))
+    )
+    src_failedish_proxy_w = int(failedish_mask.sum()) if hasattr(failedish_mask, "sum") else 0
+
+    dst_flow_count_w = len(rows_dst)
+    dst_unique_src_count_w = rows_dst["Src IP dec"].nunique()
+    dst_syn_count_w = rows_dst["SYN Flag Count"].sum()
+
+    dst_bytes_fwd_sum_w = rows_dst["Total Length of Fwd Packet"].sum()
+    dst_bytes_bwd_sum_w = rows_dst["Total Length of Bwd Packet"].sum()
+    dst_bytes_sum_w = dst_bytes_bwd_sum_w + dst_bytes_fwd_sum_w
+
+    return pd.Series(
+        {
+            "src_flow_count_w": int(src_flow_count_w),
+            "src_unique_dst_count_w": int(src_unique_dst_count_w),
+            "src_unique_dst_port_count_w": int(src_unique_dst_port_count_w),
+            "src_syn_count_w": float(src_syn_count_w),
+            "src_bytes_fwd_sum_w": float(src_bytes_fwd_sum_w),
+            "src_bytes_bwd_sum_w": float(src_bytes_bwd_sum_w),
+            "src_failedish_proxy_w": int(src_failedish_proxy_w),
+            "dst_flow_count_w": int(dst_flow_count_w),
+            "dst_unique_src_count_w": int(dst_unique_src_count_w),
+            "dst_syn_count_w": float(dst_syn_count_w),
+            "dst_bytes_sum_w": float(dst_bytes_sum_w)
+        }
+    )
+
+
+def get_history(rows: pd.DataFrame, row: pd.Series, window: float):
+    src_ip = row.get("Src IP dec")
+    dst_ip = row.get("Dst IP dec")
+    start = row.get('Timestamp')
+
+    new = ip_hist(rows, start, window, src_ip, dst_ip)
+    row = pd.concat([row, new])
+
+    return row
 
 def get_balanced_subset(
     *,
