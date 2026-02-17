@@ -26,8 +26,39 @@ def get_data(
     ds = load_dataset("bvk/CICIDS-2017", split="train")
     seed = random.randint(1, 255)
 
+    label_map = {
+        "BENIGN": "BENIGN",
+
+        "Botnet": "Botnet",
+        "Botnet - Attempted": "Botnet",
+
+        "DDoS": "DoS",
+
+        "DoS GoldenEye": "DoS",
+        "DoS GoldenEye - Attempted": "DoS",
+        "DoS Hulk": "DoS",
+        "DoS Hulk - Attempted": "DoS",
+        "DoS Slowhttptest": "DoS",
+        "DoS Slowhttptest - Attempted": "DoS",
+        "DoS Slowloris": "DoS",
+        "DoS Slowloris - Attempted": "DoS",
+
+        "FTP-Patator": "BruteForce",
+        "FTP-Patator - Attempted": "BruteForce",
+        "SSH-Patator": "BruteForce",
+
+        "Heartbleed": "Botnet",
+
+        "Infiltration": "PortScan",
+        "Infiltration - Attempted": "PortScan",
+        "Infiltration - Portscan": "PortScan",
+
+        "Portscan": "PortScan",
+    }
+
+    ds = ds.shuffle(seed=seed)
     if small_subset:
-        ds = ds.shuffle(seed=seed).select(range(1000))
+        ds = ds.select(range(1000))
     if test_split:
         ds = ds.train_test_split(test_size=0.2, seed=seed)
         if validation_split:
@@ -44,8 +75,8 @@ def get_data(
     running_id = 0
     for split_name, split_ds in ds.items():
         pdf = split_ds.to_pandas().reset_index(drop=True)
-        if "Label" in pdf.columns:
-            pdf = pdf[pdf["Label"].isin(allowed_set)].reset_index(drop=True)
+        pdf["Label"] = pdf["Label"].replace(label_map)
+        pdf = pdf[pdf["Label"].isin(allowed_set)].reset_index(drop=True)
         pdf["id"] = range(running_id, running_id + len(pdf))
         running_id += len(pdf)
         X[split_name] = pdf.drop(columns=["Label", "Attempted Category"], errors="ignore")
@@ -94,6 +125,50 @@ def count_attacks(start: str, end: str, *, Y_timeframe: DataFrame | None = None)
         X, Y_timeframe = get_timeframe(start, end)
 
     return len(Y_timeframe[(Y_timeframe["Label"] != "BENIGN")])
+
+
+def get_balanced_subset(
+    *,
+    X: dict[str, DataFrame] | None = None,
+    Y: dict[str, DataFrame] | None = None,
+    seed: int | None = None,
+    allowed_labels: list[str] | None = None,
+) -> Tuple[DataFrame, DataFrame]:
+    """
+    Returns the largest balanced subset with a 50/50 split of BENIGN vs non-BENIGN rows.
+    """
+
+    if X is None or Y is None:
+        X, Y = get_data(
+            test_split=False,
+            validation_split=False,
+            small_subset=False,
+            allowed_labels=allowed_labels,
+        )
+
+    X_train = X["train"]
+    Y_train = Y["train"]
+
+    benign = Y_train[Y_train["Label"] == "BENIGN"]
+    non_benign = Y_train[Y_train["Label"] != "BENIGN"]
+
+    print(len(non_benign))
+
+    n_half = min(len(benign), len(non_benign))
+    if n_half == 0:
+        raise ValueError("Not enough rows to build a balanced subset.")
+
+    benign_sample = benign.sample(n=n_half, random_state=seed)
+    non_benign_sample = non_benign.sample(n=n_half, random_state=seed)
+    subset_labels = pd.concat([benign_sample, non_benign_sample]).sample(
+        frac=1.0, random_state=seed
+    )
+
+    subset_X = X_train[X_train["id"].isin(subset_labels["id"])]
+    subset_X = subset_X.set_index("id").reindex(subset_labels["id"]).reset_index()
+    subset_Y = subset_labels.set_index("id").reindex(subset_labels["id"]).reset_index()
+
+    return subset_X, subset_Y
 
 
 
