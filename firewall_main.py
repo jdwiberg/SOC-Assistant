@@ -48,6 +48,7 @@ def firewall_test():
         check = firewall_AI.openai_risk_filter(
                 openai_client,
                 df,
+                firewall_table_df,
                 promptIn
             )
         
@@ -57,7 +58,6 @@ def firewall_test():
             print("\nIssue:", item.issue)
             print("\nMissed Attacks:", item.attacks)
             print("\nFix:", item.rationale_and_fix)
-            print("\nCode:", item.code)
 
         x = False
 
