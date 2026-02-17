@@ -26,6 +26,8 @@ def main(n: int, prompt_file_name: str):
     print("Hello from soc-assistant!")
 
     X, Y = utils.get_balanced_subset(
+        # allowed_labels=["BENIGN", "DDoS", "BruteForce"]
+        # allowed_labels=["BENIGN", "PortScan"]
         allowed_labels=["BENIGN", "DDoS", "PortScan", "BruteForce"]
     )
     #Dataframe for training model to identify Vulnerability scans and DNS Beaconing
@@ -68,9 +70,14 @@ def main(n: int, prompt_file_name: str):
 
         print(f"Network Flow Data {i}:\nGround Truth: {gt_label}\nLLM Result: {result_label}\n")
     
-    print(f"Accuracy: {round((correct / total) * 100 if total != 0 else 0, 4)}%")
+    accuracy = (correct / total) * 100 if total != 0 else 0
+    precision = true_pos / (true_pos + false_pos) if (true_pos + false_pos) != 0 else 0
+    recall = true_pos / (true_pos + false_neg) if (true_pos + false_neg) != 0 else 0
+    print(f"Accuracy: {round(accuracy, 4)}%")
     print(f"True Positives: {true_pos} | True Negatives: {true_neg} | False Positive: {false_pos} | False Negatives: {false_neg}")
+    f1 = (2 * precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+    print(f"Precision: {round(precision, 4)} | Recall: {round(recall, 4)} | F1: {round(f1, 4)}")
         
 
 if __name__ == "__main__":
-    main(10, "aggressive.txt")
+    main(50, "aggressive.txt")
