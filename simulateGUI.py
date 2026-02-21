@@ -118,7 +118,7 @@ def run_simulation(n, start_time, end_time):
                     false_neg += 1
 
             total += 1
-            append_output(f"Flow {i} | GT: {gt_label} | AI: {result_label}\n")
+            append_output(f"Network Flow Data{i} | Ground Truth: {gt_label} | LLM Result: {result_label}\n")
 
             percent_complete = int(((i + 1) / len(flow_rows)) * 100)
             root.after(0, lambda val=i+1, perc=percent_complete: (
