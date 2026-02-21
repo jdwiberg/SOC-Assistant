@@ -60,7 +60,8 @@ def run_simulation(n, start_time, end_time):
         append_output("Starting AI Simulation...\n\n")
         openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-        allowed_labels = ["BENIGN", "DDoS", "Portscan", "BruteForce", "Botnet"]
+        # allowed_labels = ["BENIGN", "DDoS", "Portscan", "BruteForce", "Botnet"]
+        allowed_labels = ["BENIGN", "Portscan"]
         X, Y = utils.get_balanced_subset(allowed_labels=allowed_labels)
 
         # Normalize timestamps safely
